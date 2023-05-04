@@ -1,17 +1,12 @@
 const bcrypt = require('bcrypt');
 const { pwdSaltRounds, url } = require('./constants');
-const formData = require('form-data');
-const Mailgun = require('mailgun.js');
-const mailgun = new Mailgun(formData);
+
 const admin = require("firebase-admin");
 
 const FCMserviceAccount = require('../kruz_firebase_admin.json');
 const serviceAccount = FCMserviceAccount;
 admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
-const mg = mailgun.client({
-    username: 'api', 
-    key: process.env.MAILGUN_API_KEY2,
-});
+
 const DOMAIN = "https://midman.onrender.com";
 
 const credentials = {

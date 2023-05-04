@@ -135,7 +135,7 @@ class Home {
           videos = videoModel
             .find({ video: { $ne: null } })
             .sort("-views")
-  
+
             .populate({
               path: "uploader",
               model: userModel,
@@ -808,6 +808,22 @@ class Home {
             await userModel.findByIdAndUpdate(user._id, {
               $push: { follower: { id: verified["id"], time: moment.now() } },
             });
+            await notifications.createNotification({
+              userId: verified["id"],
+              triggerId: user._id,
+              title: `Following Notification`,
+              content: `Awesome, you're now following @${user.username}! You'll be the first to know about their latest uploads`,
+              type: "regular",
+              link: ``,
+            });
+            await notifications.createNotification({
+              userId: user._id,
+              triggerId: user._id,
+              title: `Following Notification`,
+              content: `You're getting more popular! @${me.username} just followed your account. Keep up the great work!`,
+              type: "regular",
+              link: ``,
+            });
           } else {
             const followey = user.follower.filter(
               (follow) => !follow.id.equals(verified["id"])
@@ -818,6 +834,22 @@ class Home {
         } else {
           await userModel.findByIdAndUpdate(user._id, {
             $push: { follower: { id: verified["id"], time: moment.now() } },
+          });
+          await notifications.createNotification({
+            userId: verified["id"],
+            triggerId: user._id,
+            title: `Following Notification`,
+            content: `Awesome, you're now following @${user.username}! You'll be the first to know about their latest uploads`,
+            type: "regular",
+            link: ``,
+          });
+          await notifications.createNotification({
+            userId: user._id,
+            triggerId: user._id,
+            title: `Following Notification`,
+            content: `You're getting more popular! @${me.username} just followed your account. Keep up the great work!`,
+            type: "regular",
+            link: ``,
           });
         }
         if (me.following && me.following.length > 0) {
@@ -882,11 +914,11 @@ class Home {
             }
           });
           if (histories.length > 10) {
-           histories = histories.slice(1);
+            histories = histories.slice(1);
           }
           await userModel.findByIdAndUpdate(user._id, {
             $push: {
-              history: histories
+              history: histories,
             },
           });
         }

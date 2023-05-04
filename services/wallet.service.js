@@ -114,7 +114,7 @@ const subscribe = async (walletData) => {
           userId: walletData.receiversId,
           triggerId: senderData?._id,
           title: `  subscribed to your channel`,
-          content: `  subscribed to your channel and sent you ${walletData.amount} Naira`,
+          content: `  subscribed to your channel and sent you ${walletData.amount} naira`,
           type: "Credit",
         });
 
@@ -123,7 +123,7 @@ const subscribe = async (walletData) => {
           userId: id,
           title: `You subscribed to @${receiverData?.username} channel`,
           triggerId: receiverData?._id,
-          content: `You subscribed to @${receiverData?.username}   channel and  ${walletData.amount} Naira was deducted from your wallet`,
+          content: `You subscribed to @${receiverData?.username}   channel and  ${walletData.amount} naira was deducted from your wallet`,
           type: "Debit",
         });
       })
@@ -238,7 +238,7 @@ const transferForSubscribe = async (walletData, id) => {
       userId: walletData.receiversId,
       triggerId: senderData?._id,
       title: `@${senderData?.username}  subscribed to your channel`,
-      content: `@${senderData?.username}  subscribed to your channel and sent you ${walletData.amount} Naira`,
+      content: `You're on a roll! @${senderData?.username}   just subscribed to your channel. Keep up the great work!`,
       type: "Credit",
     });
     // send notification to sender
@@ -246,7 +246,7 @@ const transferForSubscribe = async (walletData, id) => {
       userId: id,
       title: `You subscribed to @${receiverData?.username}   channel`,
       triggerId: receiverData?._id,
-      content: `You subscribed to @${receiverData?.username}   channel and  ${walletData.amount} Naira was deducted from your wallet`,
+      content: `Congratulations, you've subscribed to @${receiverData?.username}! Keep an eye out for new videos from your favorite creators`,
       type: "Debit",
     });
     return "subscribed";

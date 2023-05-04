@@ -37,6 +37,7 @@ const videocomments = require("../models/videocomments");
 const replycomments = require("../models/replycomments");
 const webhooksModel = require("../models/webhooks.model");
 const videoViews = require("../models/videoViews");
+const preferenceModel = require("../models/preference.model");
 
 class AppVideo {
   /**
@@ -77,8 +78,8 @@ class AppVideo {
         await notifications.createNotification({
           userId: verified["id"],
           triggerId: user._id,
-          title: `Your Video upload is in progress`,
-          content: `Video upload started`,
+          title: `Video upload Started`,
+          content: `Your video has been uploaded successfully! It will now undergo processing and be available to view shortly.`,
           type: "regular",
           link: ``,
         });
@@ -1245,15 +1246,16 @@ class AppVideo {
         await notifications.createNotification({
           userId: verified["id"],
           triggerId: user._id,
-          title: `Your video ${video.description} has been uploaded successfully`,
-          content: `Video Upload completed`,
+          title: `Video upload complete`,
+          content: `Congratulations! Your video has been uploaded and is now available to view by your followers.`,
           type: "regular",
           link: ``,
         });
         await sendPushMessage(user?.fcmToken, {
-          title: "Upload Information",
-          message: `Your video ${video.description} has been uploaded successfully`,
+          title: "Video upload complete",
+          message: `Congratulations! Your video has been uploaded and is now available to view by your followers.`,
         });
+        this.sendMultiplePushNotification(user);
       } else if (public_id.includes("kruzshorts")) {
         const video = await shorts.findOne({ public_id: public_id });
         video.video = secure_url;
@@ -1263,15 +1265,16 @@ class AppVideo {
         await notifications.createNotification({
           userId: verified["id"],
           triggerId: user._id,
-          title: `Your Spark has been uploaded successfully`,
-          content: `Spark Upload completed`,
+          title: `Spark Upload completed`,
+          content: `Congratulations! Your video has been uploaded and is now available to view by your followers.`,
           type: "regular",
           link: ``,
         });
         await sendPushMessage(user?.fcmToken, {
           title: "Upload Information",
-          message: `Your spark video ${video.description} has been uploaded successfully`,
+          message: `Congratulations! Your video has been uploaded and is now available to view by your followers.`,
         });
+        this.sendMultiplePushNotification(user);
       } else if (resource_type === "image" && folder === "thumbnails") {
         const video = await videoModel.findOne({ public_id: public_id });
         video.thumbnail = secure_url;
@@ -1280,7 +1283,11 @@ class AppVideo {
     }
     res.send(200);
   };
-  sendMultiplePushNotification = (user) =>{
+  sendMultiplePushNotification = (user,type) =>{
+      const subscribers = user.subscribers;
+
+      subscribersId = subscribers.filter(sub => sub.id);
+      notifiable = preferenceModel.find({favoriteContents: true,user: {$in: subscribersId}}).populate({path: 'user', model: userModel,select:'fcmToken'});
 
   }
 }
