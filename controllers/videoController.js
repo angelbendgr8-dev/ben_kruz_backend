@@ -1231,7 +1231,7 @@ class AppVideo {
         video.save();
         user = await userModel.findOne({ _id: video.uploader });
         await notifications.createNotification({
-          userId:user._id,
+          userId: user._id,
           triggerId: user._id,
           title: `Video upload complete`,
           content: `Congratulations! Your video has been uploaded and is now available to view by your followers.`,
@@ -1284,12 +1284,14 @@ class AppVideo {
         .find({ favoriteStories: true, user: { $in: subscribersId } })
         .populate({ path: "user", model: userModel, select: "fcmToken" });
     }
-    const tokens = notifiable.filter((user) => user.user.fcmToken);
+    if (notifiable.length > 1) {
+      const tokens = notifiable.filter((user) => user.user.fcmToken);
 
-    await sendMultiPushMessage(tokens, {
-      title: "Favorite content upload Notification",
-      message: `Get ready to watch! @${user.username} just shared a new video. Open your app to start watching.`,
-    });
+      await sendMultiPushMessage(tokens, {
+        title: "Favorite content upload Notification",
+        message: `Get ready to watch! @${user.username} just shared a new video. Open your app to start watching.`,
+      });
+    }
   };
 }
 
