@@ -15,7 +15,7 @@ videoRouter.post(
 videoRouter.post("/upload", AppVideo.webhookVideo);
 videoRouter.post("/view",authMiddleware, AppVideo.viewVideo);
 videoRouter.post("/shorts/view", AppVideo.viewShort);
-videoRouter.post("/create/stream", AppVideo.createStreamAsset);
+// videoRouter.post("/create/stream", AppVideo.createStreamAsset);
 videoRouter.post(
   "/save/short",
   upload.fields([{ name: "file" }]),
