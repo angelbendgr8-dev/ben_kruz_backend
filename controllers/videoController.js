@@ -559,14 +559,13 @@ class AppVideo {
       reqBody.user = user;
       reqBody.videoId = reqBody.videoId;
       const comment = new videoComments(reqBody);
-      uploaderPref = await preferenceModel.findOne({user: video.uploader});
-      if(uploaderPref.commentOnVideo){
-
+      uploaderPref = await preferenceModel.findOne({ user: video.uploader });
+      if (uploaderPref.commentOnVideo) {
         await notifications.createNotification({
           userId: video.uploader,
           triggerId: user._id,
           title: `video Comment notification`,
-          content: `Awesome, you're now following @${user.username}! You'll be the first to know about their latest uploads`,
+          content: `@${user.username}! commented on your video`,
           type: "regular",
           link: ``,
         });
@@ -921,7 +920,17 @@ class AppVideo {
         reqBody.user = user;
         reqBody.videoId = video._id;
         const comment = new shortComments(reqBody);
-        //  console.log(video);
+        uploaderPref = await preferenceModel.findOne({ user: video.uploader });
+        if (uploaderPref.commentOnVideo) {
+          await notifications.createNotification({
+            userId: video.uploader,
+            triggerId: user._id,
+            title: `video Comment notification`,
+            content: `@${user.username}! commented on your video`,
+            type: "regular",
+            link: ``,
+          });
+        }
         await comment.save();
         sendResponse(res, OK, "success", comment, []);
       }
@@ -1202,7 +1211,6 @@ class AppVideo {
     }
   };
 
-
   webhookVideo = async (req, res) => {
     webhooksModel.create({ activities: req.body });
     const {
@@ -1223,7 +1231,7 @@ class AppVideo {
         video.save();
         user = await userModel.findOne({ _id: video.uploader });
         await notifications.createNotification({
-          userId: verified["id"],
+          userId:user._id,
           triggerId: user._id,
           title: `Video upload complete`,
           content: `Congratulations! Your video has been uploaded and is now available to view by your followers.`,
@@ -1242,7 +1250,7 @@ class AppVideo {
         video.save();
         user = await userModel.findOne({ _id: video.uploader });
         await notifications.createNotification({
-          userId: verified["id"],
+          userId: user._id,
           triggerId: user._id,
           title: `Spark Upload completed`,
           content: `Congratulations! Your video has been uploaded and is now available to view by your followers.`,
