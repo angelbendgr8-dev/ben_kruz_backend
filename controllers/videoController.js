@@ -3,6 +3,7 @@ const {
   saveToDatabase,
   sendResponse,
   sendPushMessage,
+  sendMultiPushMessage,
 } = require("../helpers/functions");
 var jwt = require("jsonwebtoken");
 const { StatusCodes } = require("http-status-codes");
@@ -15,13 +16,9 @@ const streamModel = require("../models/Livestream");
 const categoryModel = require("../models/category");
 const videoComments = require("../models/videocomments");
 const shortComments = require("../models/shortsComments");
-const Mux = require("@mux/mux-node");
 
 const { functionPaginate } = require("../helpers/pagination");
-const { Video } = new Mux(
-  process.env.MUX_ACCESS_KEY,
-  process.env.MUX_SECRET_KEY
-);
+
 const {
   uploadVideo,
   uploadImage,
@@ -351,21 +348,23 @@ class AppVideo {
     const reqBody = { ...req.body };
     const user = req.user;
     try {
-      const video = await videoModel.findOne({_id: reqBody.video})
-      
+      const video = await videoModel.findOne({ _id: reqBody.video });
+
       const isView = await videoViews.findOne({
         videoId: reqBody.video,
         user: user._id,
       });
-   
+
       if (_.isEmpty(isView)) {
         await videoViews.create({
           user: user._id,
           videoId: reqBody.video,
           info: reqBody.info,
-        })
-        await videoModel.findByIdAndUpdate(reqBody.video,{views: video.views+1 });
-      } 
+        });
+        await videoModel.findByIdAndUpdate(reqBody.video, {
+          views: video.views + 1,
+        });
+      }
       sendResponse(res, OK, "success", {}, []);
     } catch (error) {
       console.log(error);
@@ -560,7 +559,18 @@ class AppVideo {
       reqBody.user = user;
       reqBody.videoId = reqBody.videoId;
       const comment = new videoComments(reqBody);
-      //  console.log(video);
+      uploaderPref = await preferenceModel.findOne({user: video.uploader});
+      if(uploaderPref.commentOnVideo){
+
+        await notifications.createNotification({
+          userId: video.uploader,
+          triggerId: user._id,
+          title: `video Comment notification`,
+          content: `Awesome, you're now following @${user.username}! You'll be the first to know about their latest uploads`,
+          type: "regular",
+          link: ``,
+        });
+      }
       await comment.save();
       sendResponse(res, OK, "success", comment, []);
     } catch (error) {
@@ -1192,37 +1202,6 @@ class AppVideo {
     }
   };
 
-  //   functions for livestreaming
-  createStreamAsset = async (req, res) => {
-    const authToken = req.headers.authorization;
-    const token = authToken.split(" ")[1];
-
-    try {
-      const verified = jwt.verify(token, process.env.JWT_TOKEN);
-      if (!verified["id"] || !authToken) {
-        sendResponse(res, UNAUTHORIZED, "error", {});
-      } else {
-        const user = await userModel.findOne({ _id: verified["id"] });
-
-        const response = await Video.LiveStreams.create({
-          playback_policy: "",
-          new_asset_settings: { playback_policy: "" },
-        });
-        console.log(response.playback_ids[0]);
-        const stream = new streamModel({
-          streamer: verified["id"],
-          streamkey: response.stream_key,
-          type: req.body.type,
-          price: req.body.price,
-          playbackId: response.playback_ids[0].id,
-        });
-        stream.save();
-      }
-    } catch (error) {
-      console.log(error);
-      sendResponse(res, OK, "error", {}, []);
-    }
-  };
 
   webhookVideo = async (req, res) => {
     webhooksModel.create({ activities: req.body });
@@ -1283,13 +1262,27 @@ class AppVideo {
     }
     res.send(200);
   };
-  sendMultiplePushNotification = (user,type) =>{
-      const subscribers = user.subscribers;
+  sendMultiplePushNotification = async (user, type) => {
+    const subscribers = user.subscribers;
 
-      subscribersId = subscribers.filter(sub => sub.id);
-      notifiable = preferenceModel.find({favoriteContents: true,user: {$in: subscribersId}}).populate({path: 'user', model: userModel,select:'fcmToken'});
+    const subscribersId = subscribers.filter((sub) => sub.id);
+    let notifiable;
+    if (type === "video") {
+      notifiable = preferenceModel
+        .find({ favoriteContents: true, user: { $in: subscribersId } })
+        .populate({ path: "user", model: userModel, select: "fcmToken" });
+    } else {
+      notifiable = preferenceModel
+        .find({ favoriteStories: true, user: { $in: subscribersId } })
+        .populate({ path: "user", model: userModel, select: "fcmToken" });
+    }
+    const tokens = notifiable.filter((user) => user.user.fcmToken);
 
-  }
+    await sendMultiPushMessage(tokens, {
+      title: "Favorite content upload Notification",
+      message: `Get ready to watch! @${user.username} just shared a new video. Open your app to start watching.`,
+    });
+  };
 }
 
 module.exports = new AppVideo();
