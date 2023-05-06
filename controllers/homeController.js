@@ -903,7 +903,7 @@ class Home {
           });
         } else {
           let histories = user.history.map((video) => {
-            if (!video.video.equals(reqBody.videoId)) {
+            if (video.video.equals(reqBody.videoId)) {
               const newvideo = {
                 video: reqBody.videoId,
                 previousTime: reqBody.previousTime,
@@ -917,9 +917,7 @@ class Home {
             histories = histories.slice(1);
           }
           await userModel.findByIdAndUpdate(user._id, {
-            $push: {
-              history: histories,
-            },
+            history: histories,
           });
         }
       } else {
@@ -1001,11 +999,11 @@ class Home {
     }
   };
   saveToken = async (req, res, next) => {
-    const authToken = req.headers.authorization;
-    // console.log(authToken);
-    const token = authToken.split(" ")[1];
-
+    
     try {
+      const authToken = req.headers.authorization;
+      // console.log(authToken);
+      const token = authToken.split(" ")[1];
       const verified = jwt.verify(token, process.env.JWT_TOKEN);
       if (!verified["id"] || !authToken)
         throw new HttpException(401, "Authorization failed");
@@ -1022,11 +1020,11 @@ class Home {
     }
   };
   getSubScribers = async (req, res, next) => {
-    const authToken = req.headers.authorization;
-    // console.log(authToken);
-    const token = authToken.split(" ")[1];
-
+    
     try {
+      const authToken = req.headers.authorization;
+      // console.log(authToken);
+      const token = authToken.split(" ")[1];
       const verified = jwt.verify(token, process.env.JWT_TOKEN);
       if (!verified["id"] || !authToken)
         throw new HttpException(401, "Authorization failed");
@@ -1043,14 +1041,14 @@ class Home {
     }
   };
   searchContent = async (req, res, next) => {
-    const authToken = req.headers.authorization;
-    // console.log(authToken);
-    const token = authToken.split(" ")[1];
-    const page = +req.body.page;
-    const limit = +req.body.limit;
-    const { search } = req.body;
-    console.log(page);
     try {
+      const authToken = req.headers.authorization;
+      // console.log(authToken);
+      const token = authToken.split(" ")[1];
+      const page = +req.body.page;
+      const limit = +req.body.limit;
+      const { search } = req.body;
+      console.log(page);
       const verified = jwt.verify(token, process.env.JWT_TOKEN);
       if (!verified["id"] || !authToken)
         throw new HttpException(401, "Authorization failed");
@@ -1085,15 +1083,15 @@ class Home {
     }
   };
   searchProfile = async (req, res, next) => {
-    const authToken = req.headers.authorization;
-    console.log(authToken);
-    const token = authToken.split(" ")[1];
-    const page = +req.body.page;
-    const limit = +req.body.limit;
-    console.log(page);
-    const { search } = req.body;
-    console.log(search);
     try {
+      const authToken = req.headers.authorization;
+      console.log(authToken);
+      const token = authToken.split(" ")[1];
+      const page = +req.body.page;
+      const limit = +req.body.limit;
+      console.log(page);
+      const { search } = req.body;
+      console.log(search);
       const verified = jwt.verify(token, process.env.JWT_TOKEN);
       if (!verified["id"] || !authToken)
         throw new HttpException(401, "Authorization failed");

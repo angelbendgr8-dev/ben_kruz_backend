@@ -550,16 +550,21 @@ class AppVideo {
   };
   commentOnVideo = async (req, res, next) => {
     const reqBody = { ...req.body };
-    console.log(req.user);
+    console.log(req.body);
     try {
-      const video = await videoModel.findOne({ _id: reqBody.videoId });
+      let video;
+      if(reqBody.type === 'short'){
+        video = await shorts.findOne({ _id: reqBody.videoId });
+      }else{
+        video = await videoModel.findOne({ _id: reqBody.videoId });
+      }
       const user = await userModel
         .findOne({ _id: reqBody.user._id })
-        .select("_id name profilePics");
+        .select("_id username profilePics");
       reqBody.user = user;
       reqBody.videoId = reqBody.videoId;
       const comment = new videoComments(reqBody);
-      uploaderPref = await preferenceModel.findOne({ user: video.uploader });
+      const uploaderPref = await preferenceModel.findOne({ user: video.uploader });
       if (uploaderPref.commentOnVideo) {
         await notifications.createNotification({
           userId: video.uploader,
@@ -904,6 +909,7 @@ class AppVideo {
   }
   commentOnShort = async (req, res) => {
     const reqBody = { ...req.body };
+    console.log(reqBody);
 
     try {
       const authToken = req.headers.authorization;
@@ -912,15 +918,15 @@ class AppVideo {
       if (!verified["id"] || !authToken) {
         sendResponse(res, UNAUTHORIZED, "error", {});
       } else {
-        // console.log(reqBody)
+        console.log(reqBody)
         const video = await shorts.findOne({ _id: reqBody.videoId });
         const user = await userModel
           .findOne({ _id: reqBody.user._id })
-          .select("_id name profilePics");
+          .select("_id username profilePics");
         reqBody.user = user;
         reqBody.videoId = video._id;
         const comment = new shortComments(reqBody);
-        uploaderPref = await preferenceModel.findOne({ user: video.uploader });
+        const uploaderPref = await preferenceModel.findOne({ user: video.uploader });
         if (uploaderPref.commentOnVideo) {
           await notifications.createNotification({
             userId: video.uploader,
@@ -1027,10 +1033,13 @@ class AppVideo {
     }
   };
   getShortComments = async (req, res) => {
-    const authToken = req.headers.authorization;
-    const token = authToken.split(" ")[1];
-
+    
     try {
+      const authToken = req.headers.authorization;
+      const token = authToken.split(" ")[1];
+      const page = +req.query.page;
+      const limit = +req.query.limit;
+
       const verified = jwt.verify(token, process.env.JWT_TOKEN);
       if (!verified["id"] || !authToken) {
         sendResponse(res, UNAUTHORIZED, "error", {});
