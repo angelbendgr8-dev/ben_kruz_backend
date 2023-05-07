@@ -27,7 +27,7 @@ const { BAD_REQUEST, OK, UNAUTHORIZED, CREATED, SERVICE_UNAVAILABLE } =
 
 class Auth {
   async login(req, res, next) {
-    const { email, password } = req.body;
+    const { email, password, authType } = req.body;
     // console.log(loginInfo);
     try {
       const userInfo = await userModel.findOne({
@@ -43,9 +43,9 @@ class Auth {
           "Email address or username not found. Please enter a valid email address or create a new account.",
           {}
         );
-
+      console.log(userInfo);
       // sendMail(confirmEmail,'Email Confirmation',{name:userInfo.name, email:userInfo.email, token:userInfo.confirmationCode}).catch(err =>console.log(err));
-      if (userInfo.authType === "social") {
+      if (userInfo.authType === "social" && authType === "social") {
         const token = jwt.sign({ id: userInfo._id }, JWT_TOKEN);
         const data = {
           userInfo,
@@ -79,7 +79,10 @@ class Auth {
 
           sendResponse(res, OK, "success", data, []);
         } else {
-          throw new HttpException(207, "Incorrect password. Please check your password and try again.");
+          throw new HttpException(
+            207,
+            "Incorrect password. Please check your password and try again."
+          );
         }
       }
     } catch (error) {
@@ -94,9 +97,11 @@ class Auth {
         $or: [
           { email: email.trim().toLocaleLowerCase() },
           { username: username.trim().toLocaleLowerCase() },
-          { mobileNumber: mobileNumber },
         ],
       });
+      if(userInfo?.mobileNumber && userInfo.mobileNumber === mobileNumber){
+        sendResponse(res, OK, "failed", {}, []);
+      }
       if (!userInfo) {
         sendResponse(res, OK, "success", {}, []);
       } else {

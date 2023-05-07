@@ -89,7 +89,7 @@ class Home {
   };
   getCategories = async (req, res) => {
     try {
-      const categories = await category.find({ name: { $ne: "For You" } });
+      const categories = await category.find({ name: { $ne: "For you" } });
       if (categories) {
         sendResponse(res, OK, "error", categories, []);
         return;
