@@ -361,9 +361,13 @@ class AppVideo {
           videoId: reqBody.video,
           info: reqBody.info,
         });
-        await videoModel.findByIdAndUpdate(reqBody.video, {
-          views: video.views + 1,
-        });
+        await videoModel.findByIdAndUpdate(
+          reqBody.video,
+          {
+            views: video.views ? video.views + 1 : 1,
+          },
+          { new: true }
+        );
       }
       sendResponse(res, OK, "success", {}, []);
     } catch (error) {
@@ -553,18 +557,21 @@ class AppVideo {
     console.log(req.body);
     try {
       let video;
-      if(reqBody.type === 'short'){
+      if (reqBody.type === "short") {
         video = await shorts.findOne({ _id: reqBody.videoId });
-      }else{
+      } else {
         video = await videoModel.findOne({ _id: reqBody.videoId });
       }
+      console.log(reqBody.videoId);
       const user = await userModel
         .findOne({ _id: reqBody.user._id })
         .select("_id username profilePics");
       reqBody.user = user;
       reqBody.videoId = reqBody.videoId;
       const comment = new videoComments(reqBody);
-      const uploaderPref = await preferenceModel.findOne({ user: video.uploader });
+      const uploaderPref = await preferenceModel.findOne({
+        user: video.uploader,
+      });
       if (uploaderPref.commentOnVideo) {
         await notifications.createNotification({
           userId: video.uploader,
@@ -918,7 +925,7 @@ class AppVideo {
       if (!verified["id"] || !authToken) {
         sendResponse(res, UNAUTHORIZED, "error", {});
       } else {
-        console.log(reqBody)
+        console.log(reqBody);
         const video = await shorts.findOne({ _id: reqBody.videoId });
         const user = await userModel
           .findOne({ _id: reqBody.user._id })
@@ -926,7 +933,9 @@ class AppVideo {
         reqBody.user = user;
         reqBody.videoId = video._id;
         const comment = new shortComments(reqBody);
-        const uploaderPref = await preferenceModel.findOne({ user: video.uploader });
+        const uploaderPref = await preferenceModel.findOne({
+          user: video.uploader,
+        });
         if (uploaderPref.commentOnVideo) {
           await notifications.createNotification({
             userId: video.uploader,
@@ -1033,7 +1042,6 @@ class AppVideo {
     }
   };
   getShortComments = async (req, res) => {
-    
     try {
       const authToken = req.headers.authorization;
       const token = authToken.split(" ")[1];
@@ -1262,13 +1270,13 @@ class AppVideo {
           userId: user._id,
           triggerId: user._id,
           title: `Spark Upload completed`,
-          content: `Congratulations! Your video has been uploaded and is now available to view by your followers.`,
+          content: `Congratulations! Your spark has been uploaded and is now available to view by your followers.`,
           type: "regular",
           link: ``,
         });
         await sendPushMessage(user?.fcmToken, {
           title: "Upload Information",
-          message: `Congratulations! Your video has been uploaded and is now available to view by your followers.`,
+          message: `Congratulations! Your spark has been uploaded and is now available to view by your followers.`,
         });
         this.sendMultiplePushNotification(user);
       } else if (resource_type === "image" && folder === "thumbnails") {

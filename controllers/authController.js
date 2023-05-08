@@ -114,11 +114,15 @@ class Auth {
   }
 
   async verifyMobile(req, res, next) {
-    const { mobileNumber } = req.body;
+    const { email,username } = req.body;
     const { otp_hash, otp_code } = await generateMobileOtp();
     console.log(otp_code, otp_hash);
     try {
-      const result = await sendOtp(mobileNumber, otp_code);
+      const result = await sendTemplatedEmail("otp_template", {
+        email: email,
+        username: username,
+        otp_code,
+      });
       sendResponse(res, CREATED, "success", { otp_hash });
     } catch (error) {
       console.log(error);

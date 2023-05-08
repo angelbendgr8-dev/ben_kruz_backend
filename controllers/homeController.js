@@ -13,6 +13,8 @@ const shortModel = require("../models/shorts");
 const subscribeService = require("../services/subscribe.service");
 const HttpException = require("../helpers/HttpException");
 
+const notifications = require("../services/notifications");
+
 const { BAD_REQUEST, OK, UNAUTHORIZED, CREATED, SERVICE_UNAVAILABLE } =
   StatusCodes;
 
@@ -155,20 +157,20 @@ class Home {
               select: "username profilePics subscribersCount subscribers",
             });
         }
-        // const { data, totalContent, totalPages } = await functionPaginate(
-        //   page,
-        //   limit,
-        //   videos,
-        //   length.length
-        // );
-        // // console.log(data);
-        // sendResponse(
-        //   res,
-        //   OK,
-        //   "success",
-        //   { videos: data, totalContent, totalPages },
-        //   []
-        // );
+        const { data, totalContent, totalPages } = await functionPaginate(
+          page,
+          limit,
+          videos,
+          length.length
+        );
+        // console.log(data);
+        sendResponse(
+          res,
+          OK,
+          "success",
+          { videos: data, totalContent, totalPages },
+          []
+        );
       } else if (title === "All") {
         length = await videoModel.find({ video: { $ne: null } });
         videos = videoModel
@@ -196,32 +198,31 @@ class Home {
         // );
       } else {
         length = await category.findOne({ name: title });
-        videos = videoModel
+        videos =  videoModel
           .find({ video: { $ne: null } })
           .where("_id")
-          .in(cat.videos)
+          .in(length.videos)
           .sort("-created")
           .populate({
             path: "uploader",
             model: userModel,
             select: "username profilePics subscribersCount subscribers",
           });
+        const { data, totalContent, totalPages } = await functionPaginate(
+          page,
+          limit,
+          videos,
+          length.videos.length
+        );
+        console.log(videos);
+        sendResponse(
+          res,
+          OK,
+          "success",
+          { videos: data, totalContent, totalPages },
+          []
+        );
       }
-      // console.log(videos.length);
-      const { data, totalContent, totalPages } = await functionPaginate(
-        page,
-        limit,
-        videos,
-        length.length
-      );
-      // console.log(data);
-      sendResponse(
-        res,
-        OK,
-        "success",
-        { videos: data, totalContent, totalPages },
-        []
-      );
     } catch (error) {
       console.log(error);
       sendResponse(res, OK, "error", [], [{ msg: `Unauthorized` }]);
@@ -999,7 +1000,6 @@ class Home {
     }
   };
   saveToken = async (req, res, next) => {
-    
     try {
       const authToken = req.headers.authorization;
       // console.log(authToken);
@@ -1020,7 +1020,6 @@ class Home {
     }
   };
   getSubScribers = async (req, res, next) => {
-    
     try {
       const authToken = req.headers.authorization;
       // console.log(authToken);
@@ -1173,6 +1172,10 @@ class Home {
       console.log(error);
       next(error);
     }
+  };
+  checkSubscriptions = async (req,res,next) => {
+    const user = req.user;
+    subscriptions = user.subscribeTime;
   };
 }
 

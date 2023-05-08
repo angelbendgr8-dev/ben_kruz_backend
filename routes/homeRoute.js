@@ -40,7 +40,7 @@ homeRouter.post("/add/history", authMiddleware, Home.addHistory);
 homeRouter.get("/get/history", authMiddleware, Home.getHistory);
 homeRouter.post("/delete/history", authMiddleware, Home.deleteHistory);
 homeRouter.post("/end/subscription", authMiddleware, Home.endSubscription);
-
+homeRouter.post("/check/subscriptions", authMiddleware, Home.checkSubscriptions);
 homeRouter.get(`/user/:id`, Home.getUserById);
 
 module.exports = homeRouter;
