@@ -21,6 +21,7 @@ const HttpException = require("../helpers/HttpException");
 const { createWallet } = require("../services/wallet.service");
 const { sendOtp, generateMobileOtp } = require("../services/sns.service");
 const { sendTemplatedEmail } = require("../services/ses.service");
+const notifications = require("../services/notifications");
 
 const { BAD_REQUEST, OK, UNAUTHORIZED, CREATED, SERVICE_UNAVAILABLE } =
   StatusCodes;
@@ -145,11 +146,11 @@ class Auth {
       const token = jwt.sign({ id: newUser._id }, JWT_TOKEN, {
         expiresIn: 86400,
       });
-      // const otpCode = secret;
-      console.log("here");
+     
 
       const savedUser = await saveToDatabase(newUser);
-      console.log(savedUser);
+      await notifications.getPreference(savedUser);
+      // console.log(savedUser);
       if (newUser == savedUser) {
         savedUser.password = "";
         savedUser.status = null;
