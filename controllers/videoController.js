@@ -1180,7 +1180,7 @@ class AppVideo {
           uploader: id,
           video: { $ne: null },
         });
-        const videos = videoModel.find({ uploader: id }).sort({ createdAt: 1 });
+        const videos = videoModel.find({ uploader: id ,video: { $ne: null },}).sort({ createdAt: 1 });
 
         // console.log(videos);
         if (videos) {
