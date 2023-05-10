@@ -4,11 +4,11 @@ var jwt = require("jsonwebtoken");
 const userModel = require("../models/user");
 
 const authMiddleware = async (req, res, next) => {
-  console.log(req.headers);
+  // console.log(req.headers);
   try {
     const authToken = req.headers.authorization;
 
-    console.log(authToken);
+    // console.log(authToken);
     if (authToken) {
       const token = authToken.split(" ")[1];
       const verified = jwt.verify(token, process.env.JWT_TOKEN);

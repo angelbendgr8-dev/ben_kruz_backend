@@ -4,6 +4,7 @@ const userModel = require("../models/user");
 const transactionHistory = require("../models/transaction.model");
 
 const notifications = require("./notifications");
+const { DateTime } = require("luxon");
 
 const createWallet = async (userId) => {
   console.log(userId);
@@ -27,22 +28,13 @@ const fundWallet = async (data, id) => {
   await transactionHistory.create({
     userId: id,
     ...data,
-    date: new Date(),
+    date:DateTime.now(),
     type: "CREDIT",
     recipient: userData._id,
     status: 'completed'
   });
   wallet.save();
 
-  // await this.userNotification.create({
-  //   userId: id,
-  //   title: "Wallet Deposit",
-  //   content:
-  //     "You have successfully deposited " +
-  //     data.amount +
-  //     " to your wallet",
-  //   type: "Credit",
-  // });
 
   return wallet;
 };
@@ -78,7 +70,7 @@ const subscribe = async (walletData) => {
       senderWallet.transaction_history.push({
         amount: walletData.amount,
         description: walletData.description,
-        date: new Date(),
+        date:DateTime.now(),
         type: "transferOut",
         recipient: receiverData.firstName + " " + receiverData.lastName,
         sender: senderData.firstName + " " + senderData.lastName,
@@ -87,15 +79,15 @@ const subscribe = async (walletData) => {
       receiverWallet.transaction_history.push({
         amount: walletData.amount,
         description: walletData.description,
-        date: new Date(),
+        date:  DateTime.now(),
         type: "transferIn",
         recipient: receiverData.firstName + " " + receiverData.lastName,
         sender: senderData.firstName + " " + senderData.lastName,
         reference,
       });
     }
-    const date = new Date();
-    date.setMonth(date.getMonth() + 1);
+    const date =DateTime.now();
+    const exipire = date.plus({months: 1});
     receiverData.subscribers.push(senderData._id);
     receiverData.subscribeTime.push({
       expiresIn: date.toString(),
@@ -180,7 +172,7 @@ const transferForSubscribe = async (walletData, id) => {
         userId: senderData._id,
         amount: walletData.amount,
         description: "debit for subscription",
-        date: new Date(),
+        date:DateTime.now(),
         type: "DEBIT",
         recipient: receiverData._id,
         reference,
@@ -190,26 +182,26 @@ const transferForSubscribe = async (walletData, id) => {
         userId: receiverData._id,
         amount: walletData.amount,
         description: "credit for subscription",
-        date: new Date(),
+        date:DateTime.now(),
         type: "CREDIT",
         sender: senderData._id,
         reference,
         status: 'completed'
       });
     }
-    const date = new Date();
-    date.setMonth(date.getMonth() + 1);
+    const date = DateTime.now();
+    const expires = date.plus({months: 1});
     receiverData.subscribers.push(senderData._id);
     receiverData.subscribeTime.push({
-      expiresIn: date.toString(),
+      expiresIn: expires.toString(),
       id: senderData._id,
     });
     senderData.subscriptions.push({
-      expiresIn: date.toString(),
+      expiresIn: expires.toString(),
       id: receiverData._id,
     });
     receiverData.subscribersCount += 1;
-    const date2 = new Date();
+    const date2 =DateTime.now();
     // const ifExists = channel.subscribe.find(
     //   each => each.month === date2.toString().slice(4, 7) && each.year === date2.toString().slice(11, 15),
     // );

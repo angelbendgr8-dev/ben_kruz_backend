@@ -44,7 +44,7 @@ class Auth {
           "Email address or username not found. Please enter a valid email address or create a new account.",
           {}
         );
-      console.log(userInfo);
+        await notifications.getPreference(userInfo);
       // sendMail(confirmEmail,'Email Confirmation',{name:userInfo.name, email:userInfo.email, token:userInfo.confirmationCode}).catch(err =>console.log(err));
       if (userInfo.authType === "social" && authType === "social") {
         const token = jwt.sign({ id: userInfo._id }, JWT_TOKEN);

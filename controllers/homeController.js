@@ -1,5 +1,9 @@
 const express = require("express");
-const { saveToDatabase, sendResponse } = require("../helpers/functions");
+const {
+  saveToDatabase,
+  sendResponse,
+  sendPushMessage,
+} = require("../helpers/functions");
 const { functionPaginate } = require("../helpers/pagination");
 var jwt = require("jsonwebtoken");
 const { StatusCodes } = require("http-status-codes");
@@ -14,6 +18,7 @@ const subscribeService = require("../services/subscribe.service");
 const HttpException = require("../helpers/HttpException");
 
 const notifications = require("../services/notifications");
+const { DateTime, Interval } = require("luxon");
 
 const { BAD_REQUEST, OK, UNAUTHORIZED, CREATED, SERVICE_UNAVAILABLE } =
   StatusCodes;
@@ -198,7 +203,7 @@ class Home {
         // );
       } else {
         length = await category.findOne({ name: title });
-        videos =  videoModel
+        videos = videoModel
           .find({ video: { $ne: null } })
           .where("_id")
           .in(length.videos)
@@ -950,7 +955,8 @@ class Home {
         .findOne({ _id: user._id })
         .populate({ path: "history.video", model: videoModel })
         .exec();
-      sendResponse(res, OK, "success", newUser.history, []);
+      const history = newUser.history.filter((his) => his.video !== null);
+      sendResponse(res, OK, "success", history, []);
     } catch (error) {
       console.log(error);
 
@@ -1173,9 +1179,28 @@ class Home {
       next(error);
     }
   };
-  checkSubscriptions = async (req,res,next) => {
+  checkSubscriptions = async (req, res, next) => {
     const user = req.user;
-    subscriptions = user.subscribeTime;
+    const subscriptions = user.subscriptions.filter((item) => {
+      const expiry = DateTime.fromISO(item.expiresIn);
+
+      const today = DateTime.now();
+
+      const diff = Interval.fromDateTimes(today, expiry);
+      const result = diff.length("days");
+      if (result < 1) {
+        return true;
+      }
+      return false;
+    });
+
+    if (subscriptions.length > 0) {
+      await sendPushMessage(user?.fcmToken, {
+        title: "Subscription expiry notification",
+        message: `${subscriptions.length} of your subscription(s) is expiring soon. Check your subscriptions and renew today to keep the exclusive content coming.`,
+      });
+    }
+    res.send(200);
   };
 }
 

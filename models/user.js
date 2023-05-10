@@ -30,6 +30,7 @@ const userModelSchema = new mongoose.Schema(
     email_verified: { type: Boolean, default: false },
     otp_verified: { type: Boolean, default: false },
     notification: { type: Boolean, default: false },
+    appTokens: { type: String },
     subscribers: {
       type: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
       default: [],
