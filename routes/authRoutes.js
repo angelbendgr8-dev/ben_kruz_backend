@@ -3,7 +3,7 @@ const { validate } = require('../validations/validate')
 var auth = express.Router()
 const Auth = require('../controllers/authController')
 const { loginValidation, passwordResetValidation, registerValidation, confirmPasswordResetValidation } = require('../validations/authValidation')
-const appTokenMiddleware = require('../validations/appTokenValidation');
+const appTokenMiddleware = require('../middlewares/appTokenValidation');
 
 // middleware that is specific to this router
 // auth.use(function timeLog (req, res, next) {

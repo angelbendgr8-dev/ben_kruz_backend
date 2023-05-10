@@ -5,7 +5,7 @@ var jwt = require('jsonwebtoken');
 const {StatusCodes} = require('http-status-codes');
 const users = require('../models/admins');
 const moment = require('moment');
-
+const videoController = require('../controllers/videoController')
 
 const { BAD_REQUEST, OK, UNAUTHORIZED, CREATED, SERVICE_UNAVAILABLE } = StatusCodes;
 
@@ -18,13 +18,10 @@ class System {
  */
  getLinks = async (req, res) => {
         
-    const links = await users.findOne({is_admin:1}).select('terms helpdesk privacy');
+    const user = req.user;
+    await videoController.sendMultiplePushNotification(user,'short');
     // res.json(links);
-    if(links){
-        sendResponse(res, OK, 'success', links, [])
-    }else{
-        sendResponse(res, OK, 'error', [], [{'msg':'Links not found','params':'system'}])
-    }
+    
 }
 
 

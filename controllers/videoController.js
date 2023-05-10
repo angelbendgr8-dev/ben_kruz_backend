@@ -572,7 +572,7 @@ class AppVideo {
       const uploaderPref = await preferenceModel.findOne({
         user: video.uploader,
       });
-      console.log(uploaderPref);
+      
       if (uploaderPref.commentOnMyVideos === true) {
         await notifications.createNotification({
           userId: video.uploader,
@@ -583,7 +583,7 @@ class AppVideo {
           link: ``,
         });
       }
-      if (uploaderPref.commentOnShorts === true) {
+      if(uploaderPref.commentOnShorts === true){
         await notifications.createNotification({
           userId: video.uploader,
           triggerId: user._id,
@@ -1268,16 +1268,10 @@ class AppVideo {
           type: "regular",
           link: ``,
         });
-        const uploaderPref = await preferenceModel.findOne({
-          user: user._id,
+        await sendPushMessage(user?.fcmToken, {
+          title: "Video upload complete",
+          message: `Congratulations! Your video has been uploaded and is now available to view by your followers.`,
         });
-        if (uploaderPref.contentUploads === true) {
-          await sendPushMessage(user?.fcmToken, {
-            title: "Video upload complete",
-            message: `Congratulations! Your video has been uploaded and is now available to view by your followers.`,
-          });
-        }
-
         this.sendMultiplePushNotification(user);
       } else if (public_id.includes("kruzshorts")) {
         const video = await shorts.findOne({ public_id: public_id });
@@ -1293,16 +1287,10 @@ class AppVideo {
           type: "regular",
           link: ``,
         });
-        const uploaderPref = await preferenceModel.findOne({
-          user: user._id,
+        await sendPushMessage(user?.fcmToken, {
+          title: "Upload Information",
+          message: `Congratulations! Your spark has been uploaded and is now available to view by your followers.`,
         });
-        if (uploaderPref.contentUploads === true) {
-          await sendPushMessage(user?.fcmToken, {
-            title: "Upload Information",
-            message: `Congratulations! Your spark has been uploaded and is now available to view by your followers.`,
-          });
-        }
-       
         this.sendMultiplePushNotification(user);
       } else if (resource_type === "image" && folder === "thumbnails") {
         const video = await videoModel.findOne({ public_id: public_id });
@@ -1313,21 +1301,24 @@ class AppVideo {
     res.send(200);
   };
   sendMultiplePushNotification = async (user, type) => {
-    const subscribers = user.subscribers;
+    const subscribers = user.follower;
 
-    const subscribersId = subscribers.filter((sub) => sub.id);
+    const subscribersId = subscribers.map((sub) => sub.id);
+    
     let notifiable;
     if (type === "video") {
-      notifiable = preferenceModel
+      notifiable = await preferenceModel
         .find({ favoriteContents: true, user: { $in: subscribersId } })
         .populate({ path: "user", model: userModel, select: "fcmToken" });
     } else {
-      notifiable = preferenceModel
+      notifiable = await preferenceModel
         .find({ favoriteStories: true, user: { $in: subscribersId } })
         .populate({ path: "user", model: userModel, select: "fcmToken" });
     }
-    if (notifiable.length > 1) {
-      const tokens = notifiable.filter((user) => user.user.fcmToken);
+    if (notifiable.length > 0) {
+      console.log(notifiable);
+      const tokens = notifiable.map((user) => user.user.fcmToken);
+      console.log(tokens);
 
       await sendMultiPushMessage(tokens, {
         title: "Favorite content upload Notification",

@@ -1,5 +1,6 @@
 var express = require('express');
 const systemController = require('../controllers/systemController');
+const authMiddleware = require('../middlewares/auth.middleware');
 var systemRouter = express.Router();
 
 // middleware that is specific to this router
@@ -9,6 +10,6 @@ var systemRouter = express.Router();
 // })
 // define the for login api
 
-systemRouter.get('/get/links',systemController.getLinks);
+systemRouter.get('/get/links',authMiddleware,systemController.getLinks);
 
 module.exports = systemRouter;

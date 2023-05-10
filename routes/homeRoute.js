@@ -3,44 +3,90 @@ const Home = require("../controllers/homeController");
 const authMiddleware = require("../middlewares/auth.middleware");
 var homeRouter = express.Router();
 
+const appTokenMiddleware = require("../middlewares/appTokenValidation");
+
 /* GET users listing. */
-homeRouter.post("/save/subscription", Home.saveSubscription);
-homeRouter.post("/save/preferences", Home.savePreferences);
+homeRouter.post(
+  "/save/subscription",
+  appTokenMiddleware,
+  Home.saveSubscription
+);
+homeRouter.post("/save/preferences", appTokenMiddleware, Home.savePreferences);
 homeRouter.post(
   "/update/language/preferences",
+  appTokenMiddleware,
   Home.updateLanguagesPreferences
 );
-homeRouter.post("/save/token", Home.saveToken);
-homeRouter.post("/update/preferences", Home.updatePreferences);
-homeRouter.get("/create/category", Home.createCategory);
-homeRouter.get("/get/categories", Home.getCategories);
-homeRouter.get("/get/my/categories", authMiddleware, Home.getMyCategories);
-homeRouter.post("/follow/user", Home.followUser);
+homeRouter.post("/save/token", appTokenMiddleware, Home.saveToken);
+homeRouter.post(
+  "/update/preferences",
+  appTokenMiddleware,
+  Home.updatePreferences
+);
+homeRouter.get("/create/category", appTokenMiddleware, Home.createCategory);
+homeRouter.get("/get/categories", appTokenMiddleware, Home.getCategories);
+homeRouter.get(
+  "/get/my/categories",
+  authMiddleware,
+  appTokenMiddleware,
+  Home.getMyCategories
+);
+homeRouter.post("/follow/user", appTokenMiddleware, Home.followUser);
 homeRouter.get(
   "/get/category/videos/:title",
   authMiddleware,
+  appTokenMiddleware,
   Home.getCategoryVideos
 );
-homeRouter.get("/get/languages", Home.getLanguages);
-homeRouter.get("/get/videos", Home.getVideos);
-homeRouter.get("/get/recent/videos", Home.getRecent);
-homeRouter.get("/get/short_videos", Home.getShorts);
-homeRouter.get("/get/languages", Home.getLanguages);
-homeRouter.get("/get/my/videos/:id", Home.getMyVideos);
-homeRouter.get("/get/video/:id", Home.getSingleVideoById);
-homeRouter.get("/get/my/short_videos", Home.getMyShorts);
-homeRouter.get("/get/short_video/:id", Home.getSingleShortById);
-homeRouter.get("/get/short_videos/:id", Home.getShortsById);
-homeRouter.get("/get/videos/:id", Home.getVideosById);
-homeRouter.get("/get/liked_videos", Home.getLikedVideos);
-homeRouter.get("/get/watch/list", Home.getWatchList);
-homeRouter.post("/search/video", Home.searchContent);
-homeRouter.post("/search/profile", Home.searchProfile);
-homeRouter.post("/add/history", authMiddleware, Home.addHistory);
-homeRouter.get("/get/history", authMiddleware, Home.getHistory);
-homeRouter.post("/delete/history", authMiddleware, Home.deleteHistory);
-homeRouter.post("/end/subscription", authMiddleware, Home.endSubscription);
-homeRouter.post("/check/subscriptions", authMiddleware, Home.checkSubscriptions);
-homeRouter.get(`/user/:id`, Home.getUserById);
+homeRouter.get("/get/languages", appTokenMiddleware, Home.getLanguages);
+homeRouter.get("/get/videos", appTokenMiddleware, Home.getVideos);
+homeRouter.get("/get/recent/videos", appTokenMiddleware, Home.getRecent);
+homeRouter.get("/get/short_videos", appTokenMiddleware, Home.getShorts);
+homeRouter.get("/get/languages", appTokenMiddleware, Home.getLanguages);
+homeRouter.get("/get/my/videos/:id", appTokenMiddleware, Home.getMyVideos);
+homeRouter.get("/get/video/:id", appTokenMiddleware, Home.getSingleVideoById);
+homeRouter.get("/get/my/short_videos", appTokenMiddleware, Home.getMyShorts);
+homeRouter.get(
+  "/get/short_video/:id",
+  appTokenMiddleware,
+  Home.getSingleShortById
+);
+homeRouter.get("/get/short_videos/:id", appTokenMiddleware, Home.getShortsById);
+homeRouter.get("/get/videos/:id", appTokenMiddleware, Home.getVideosById);
+homeRouter.get("/get/liked_videos", appTokenMiddleware, Home.getLikedVideos);
+homeRouter.get("/get/watch/list", appTokenMiddleware, Home.getWatchList);
+homeRouter.post("/search/video", appTokenMiddleware, Home.searchContent);
+homeRouter.post("/search/profile", appTokenMiddleware, Home.searchProfile);
+homeRouter.post(
+  "/add/history",
+  authMiddleware,
+  appTokenMiddleware,
+  Home.addHistory
+);
+homeRouter.get(
+  "/get/history",
+  authMiddleware,
+  appTokenMiddleware,
+  Home.getHistory
+);
+homeRouter.post(
+  "/delete/history",
+  authMiddleware,
+  appTokenMiddleware,
+  Home.deleteHistory
+);
+homeRouter.post(
+  "/end/subscription",
+  authMiddleware,
+  appTokenMiddleware,
+  Home.endSubscription
+);
+homeRouter.post(
+  "/check/subscriptions",
+  authMiddleware,
+  appTokenMiddleware,
+  Home.checkSubscriptions
+);
+homeRouter.get(`/user/:id`, appTokenMiddleware, Home.getUserById);
 
 module.exports = homeRouter;

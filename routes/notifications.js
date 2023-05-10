@@ -7,6 +7,8 @@ const {
   getPreference,
 } = require("../controllers/notifications");
 const authMiddleware = require("../middlewares/auth.middleware");
+
+const appTokenMiddleware = require("../middlewares/appTokenValidation");
 const { validate } = require("../validations/validate");
 var notificationRouter = express.Router();
 
@@ -17,11 +19,11 @@ var notificationRouter = express.Router();
 // })
 // define the for login api
 
-notificationRouter.get("/", getNotifications);
-notificationRouter.get("/settings",authMiddleware, getPreference);
-notificationRouter.post("/update/settings",authMiddleware, notificationsSettingsUpdate);
-notificationRouter.post("/general", getGeneralNotifications);
-notificationRouter.get("/read/:id", readNotification);
-notificationRouter.post("/clear", clearNotifications);
+notificationRouter.get("/",  appTokenMiddleware, getNotifications);
+notificationRouter.get("/settings", appTokenMiddleware, authMiddleware, getPreference);
+notificationRouter.post("/update/settings", appTokenMiddleware, authMiddleware, notificationsSettingsUpdate);
+notificationRouter.post("/general", appTokenMiddleware,  getGeneralNotifications);
+notificationRouter.get("/read/:id", appTokenMiddleware,  readNotification);
+notificationRouter.post("/clear", appTokenMiddleware,  clearNotifications);
 
 module.exports = notificationRouter;
