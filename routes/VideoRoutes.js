@@ -15,7 +15,7 @@ videoRouter.post(
   upload.fields([{ name: "file" }, { name: "thumbNail" }]),
   AppVideo.saveVideo
 );
-videoRouter.post("/upload", appTokenMiddleware, AppVideo.webhookVideo);
+videoRouter.post("/upload",AppVideo.webhookVideo);
 videoRouter.post(
   "/view",
   authMiddleware,
