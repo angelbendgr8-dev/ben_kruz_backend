@@ -39,8 +39,8 @@ homeRouter.get(
   Home.getCategoryVideos
 );
 homeRouter.get("/get/languages", appTokenMiddleware, Home.getLanguages);
-homeRouter.get("/get/videos", appTokenMiddleware, Home.getVideos);
-homeRouter.get("/get/recent/videos", appTokenMiddleware, Home.getRecent);
+homeRouter.get("/get/videos", appTokenMiddleware,authMiddleware, Home.getVideos);
+homeRouter.get("/get/recent/videos", appTokenMiddleware,authMiddleware, Home.getRecent);
 homeRouter.get("/get/short_videos", appTokenMiddleware, Home.getShorts);
 homeRouter.get("/get/languages", appTokenMiddleware, Home.getLanguages);
 homeRouter.get("/get/my/videos/:id", appTokenMiddleware, Home.getMyVideos);

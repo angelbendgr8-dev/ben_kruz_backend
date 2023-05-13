@@ -20,6 +20,8 @@ const HttpException = require("../helpers/HttpException");
 const notifications = require("../services/notifications");
 const { DateTime, Interval } = require("luxon");
 
+const videoViews = require("../models/videoViews");
+
 const { BAD_REQUEST, OK, UNAUTHORIZED, CREATED, SERVICE_UNAVAILABLE } =
   StatusCodes;
 
@@ -276,39 +278,33 @@ class Home {
   getVideos = async (req, res) => {
     const page = +req.query.page;
     const limit = +req.query.limit;
+    const country = req.query.country;
+
 
     try {
-      const authToken = req.headers.authorization;
+      const user = req.user;
       // console.log(authToken)
-      const token = authToken.split(" ")[1];
-      const verified = jwt.verify(token, process.env.JWT_TOKEN);
-      if (!verified["id"] || !authToken) {
-        sendResponse(res, UNAUTHORIZED, "UNAUTHORIZED", "error", {});
+      const now = DateTime.now();
+      const diff = now.minus({ 'days': 30 }).toISO();
+      let content;
+      let sorted;
+      content = await videoViews
+        .find({ 'info.country': country, createdAt: { $gte: diff } }).select('videoId');
+
+      let presence = _.countBy(content, (item) => item.videoId);
+      if (_.size(presence) > 3) {
+        sorted = Object.keys(presence).sort(function (a, b) { return presence[b] - presence[a] })
+
+
       } else {
-        const content = videoModel
-          .find({ video: { $ne: null } })
-          .sort("-created");
-        const { data, totalContent, totalPages } = await functionPaginate(
-          page,
-          limit,
-          content,
-          videoModel
-        );
-        sendResponse(
-          res,
-          OK,
-          "success",
-          { videos: data, totalContent, totalPages },
-          []
-        );
-
-        // if (videos) {
-        //   sendResponse(res, OK, "error", videos, []);
-        //   return;
-        // }
-
-        // sendResponse(res, OK, "error", [], [{ msg: `Fetch Error` }]);
+        content = await videoViews
+          .find({ createdAt: { $gte: diff } }).select('videoId');
+        presence = _.countBy(content, (item) => item.videoId);
+        sorted = Object.keys(presence).sort(function (a, b) { return presence[b] - presence[a] })
       }
+      const trending = sorted.slice(0, 20);
+      const trendingVideos = await videoModel.find({ _id: { $in: trending } });
+      sendResponse(res, OK, "success", trendingVideos, []);
     } catch (error) {
       console.log(error);
       sendResponse(res, OK, "error", [], [{ msg: `Unauthorized` }]);
@@ -317,6 +313,8 @@ class Home {
   getRecent = async (req, res) => {
     const page = +req.query.page;
     const limit = +req.query.limit;
+    const country = req.query.country;
+    console.log(country);
 
     try {
       const authToken = req.headers.authorization;
@@ -326,9 +324,17 @@ class Home {
       if (!verified["id"] || !authToken) {
         sendResponse(res, UNAUTHORIZED, "UNAUTHORIZED", "error", {});
       } else {
-        const videos = await videoModel
+        let videos;
+        videos = await videoModel
           .aggregate([{ $sample: { size: 20 } }])
-          .match({ video: { $ne: null } });
+          .match({ video: { $ne: null }, country: country }).sort({ createdAt: -1 });
+
+
+        if (_.size(videos) < 5) {
+          videos = await videoModel
+            .aggregate([{ $sample: { size: 20 } }])
+            .match({ video: { $ne: null } }).sort({ createdAt: -1 });
+        }
         sendResponse(res, OK, "success", videos, []);
 
         // if (videos) {
