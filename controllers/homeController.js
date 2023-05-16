@@ -314,7 +314,7 @@ class Home {
     const page = +req.query.page;
     const limit = +req.query.limit;
     const country = req.query.country;
-    console.log(country);
+    // console.log(country);
 
     try {
       const authToken = req.headers.authorization;

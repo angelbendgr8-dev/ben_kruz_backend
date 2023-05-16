@@ -25,6 +25,7 @@ const videoSchema = new Schema(
     height: { type: Number },
     width: { type: Number },
     comments: { type: Array, default: [] },
+    numberOfComments: {type: Number, default:0},
     likes: [{ type: Types.ObjectId, ref: "userModel" }],
     dislikes: [{ type: Types.ObjectId, ref: "userModel" }],
     likeCount: { type: Number, default: 0 },

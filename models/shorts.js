@@ -11,6 +11,7 @@ const shortsSchema = new mongoose.Schema({
   comments:{type: Array, default:[]},
   likes:[],
   views:[],
+  numberOfComments: {type: Number, default:0},
   status: { type: Boolean, default: true },
   created: { type: Date, default: Date.now() }
 },{timestamps: true});

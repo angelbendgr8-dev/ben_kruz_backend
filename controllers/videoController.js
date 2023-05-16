@@ -559,8 +559,10 @@ class AppVideo {
       let video;
       if (reqBody.type === "short") {
         video = await shorts.findOne({ _id: reqBody.videoId });
+        await shorts.findByIdAndUpdate(video._id,{numberOfComments: video.numberOfComments? video.numberOfComments++ : 1},{new: true});
       } else {
         video = await videoModel.findOne({ _id: reqBody.videoId });
+        await videoModel.findByIdAndUpdate(video._id,{numberOfComments: video.numberOfComments? video.numberOfComments++ : 1},{new: true});
       }
       // console.log(reqBody.videoId);
       const user = await userModel
@@ -1126,46 +1128,21 @@ class AppVideo {
         sendResponse(res, UNAUTHORIZED, "error", {});
       } else {
         const video = await videoModel.findOne({ _id: id });
-        // console.log(video);
+       
         const related = [];
-        // const video = await videoModel.find({})
-        // await Promise.all(
-        //   _.map(video.categories, async (category) => {
-        //     console.log(category);
-        //     const cat = await categoryModel
-        //       .findOne({ _id: category })
-        //       .populate("videos")
-        //       .exec();
-        //     if (cat) {
-        //       cat.videos.map(async (video) => {
-        //         const hasVideo = related.filter((temp) =>
-        //           temp._id.equals(video._id)
-        //         );
-        //         if (hasVideo.length > 0) {
-        //         } else {
-        //           related.push(video);
-        //         }
-        //       });
-        //     }
-        //     // console.log(related);
-        //   })
-        // );
-        const videos = videoModel
+        
+        const videos = await videoModel
           .aggregate([{ $sample: { size: 20 } }])
-          .match({ video: { $ne: null } });
+          .match({ video: { $ne: null } })
+          await videoModel.populate(videos,{path: 'uploader', model: userModel});
 
         if (videos) {
-          const { data, totalContent, totalPages } = await functionPaginate(
-            page,
-            limit,
-            videos,
-            videoModel
-          );
+          
           sendResponse(
             res,
             OK,
             "success",
-            { related: data, totalContent, totalPages },
+            videos,
             []
           );
           // sendResponse(res, OK, "success", related, []);
