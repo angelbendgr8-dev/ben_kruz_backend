@@ -3,7 +3,6 @@ const {
   saveToDatabase,
   sendResponse,
   genHash,
-  sendMail,
   sendSms,
 } = require("../helpers/functions");
 const userModel = require("../models/user");
@@ -22,6 +21,7 @@ const { createWallet } = require("../services/wallet.service");
 const { sendOtp, generateMobileOtp } = require("../services/sns.service");
 const { sendTemplatedEmail } = require("../services/ses.service");
 const notifications = require("../services/notifications");
+const sendMail = require("../services/mailgun.service");
 
 const { BAD_REQUEST, OK, UNAUTHORIZED, CREATED, SERVICE_UNAVAILABLE } =
   StatusCodes;
@@ -45,7 +45,7 @@ class Auth {
           {}
         );
         await notifications.getPreference(userInfo);
-      // sendMail(confirmEmail,'Email Confirmation',{name:userInfo.name, email:userInfo.email, token:userInfo.confirmationCode}).catch(err =>console.log(err));
+     await sendMail('confirmEmail','Email Confirmation',{name:userInfo.name, email:userInfo.email, token:userInfo.confirmationCode}).catch(err =>console.log(err));
       if (userInfo.authType === "social" && authType === "social") {
         const token = jwt.sign({ id: userInfo._id }, JWT_TOKEN);
         const data = {

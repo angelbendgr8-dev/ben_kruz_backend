@@ -17,6 +17,8 @@ const categoryModel = require("../models/category");
 const videoComments = require("../models/videocomments");
 const shortComments = require("../models/shortsComments");
 
+const videoViews = require("../models/videoViews");
+
 const { functionPaginate } = require("../helpers/pagination");
 
 const {
@@ -33,7 +35,6 @@ const HttpException = require("../helpers/HttpException");
 const videocomments = require("../models/videocomments");
 const replycomments = require("../models/replycomments");
 const webhooksModel = require("../models/webhooks.model");
-const videoViews = require("../models/videoViews");
 const preferenceModel = require("../models/preference.model");
 
 class AppVideo {
@@ -1303,6 +1304,15 @@ class AppVideo {
       });
     }
   };
+
+  getVideoAnalytics = async (req, res,next) => {
+      try{
+        const {videoId} = req.params.videoId;
+        const views = videoViews.find({ videoId: videoId})
+      }catch(error){
+
+      }
+  }
 }
 
 module.exports = new AppVideo();
