@@ -30,6 +30,7 @@ class Auth {
   async login(req, res, next) {
     const { email, password, authType } = req.body;
     // console.log(loginInfo);
+   
     try {
       const userInfo = await userModel.findOne({
         $or: [
@@ -45,7 +46,8 @@ class Auth {
           {}
         );
         await notifications.getPreference(userInfo);
-     await sendMail('confirmEmail','Email Confirmation',{name:userInfo.name, email:userInfo.email, token:userInfo.confirmationCode}).catch(err =>console.log(err));
+        // await sendMail('confirmEmail','Email Confirmation',{name:userInfo.name, email:userInfo.email, token:userInfo.confirmationCode}).catch(err =>console.log(err));
+    //  await sendMail('confirmEmail','Email Confirmation',{name:userInfo.name, email:userInfo.email, token:userInfo.confirmationCode}).catch(err =>console.log(err));
       if (userInfo.authType === "social" && authType === "social") {
         const token = jwt.sign({ id: userInfo._id }, JWT_TOKEN);
         const data = {
@@ -54,7 +56,7 @@ class Auth {
         };
         const wallet = await walletModel.findOne({ user: userInfo._id });
         if (!wallet) {
-          console.log(wallet);
+          // console.log(wallet);
           await createWallet(userInfo._id);
         }
 

@@ -113,6 +113,12 @@ videoRouter.get(
   AppVideo.getVideoComments
 );
 videoRouter.get(
+  "/get/view/analytics/:id",
+  appTokenMiddleware,
+  authMiddleware,
+  AppVideo.getVideoAnalytics
+);
+videoRouter.get(
   "/get/comments/replies/:id",
   appTokenMiddleware,
   authMiddleware,

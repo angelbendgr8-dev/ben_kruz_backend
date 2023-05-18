@@ -16,11 +16,10 @@ const videoModel = require("../models/videos");
 const shortModel = require("../models/shorts");
 const subscribeService = require("../services/subscribe.service");
 const HttpException = require("../helpers/HttpException");
-
 const notifications = require("../services/notifications");
 const { DateTime, Interval } = require("luxon");
-
 const videoViews = require("../models/videoViews");
+const transactionHistory = require("../models/transaction.model");
 
 const { BAD_REQUEST, OK, UNAUTHORIZED, CREATED, SERVICE_UNAVAILABLE } =
   StatusCodes;
@@ -280,27 +279,30 @@ class Home {
     const limit = +req.query.limit;
     const country = req.query.country;
 
-
     try {
       const user = req.user;
       // console.log(authToken)
       const now = DateTime.now();
-      const diff = now.minus({ 'days': 30 }).toISO();
+      const diff = now.minus({ days: 30 }).toISO();
       let content;
       let sorted;
       content = await videoViews
-        .find({ 'info.country': country, createdAt: { $gte: diff } }).select('videoId');
+        .find({ "info.country": country, createdAt: { $gte: diff } })
+        .select("videoId");
 
       let presence = _.countBy(content, (item) => item.videoId);
       if (_.size(presence) > 3) {
-        sorted = Object.keys(presence).sort(function (a, b) { return presence[b] - presence[a] })
-
-
+        sorted = Object.keys(presence).sort(function (a, b) {
+          return presence[b] - presence[a];
+        });
       } else {
         content = await videoViews
-          .find({ createdAt: { $gte: diff } }).select('videoId');
+          .find({ createdAt: { $gte: diff } })
+          .select("videoId");
         presence = _.countBy(content, (item) => item.videoId);
-        sorted = Object.keys(presence).sort(function (a, b) { return presence[b] - presence[a] })
+        sorted = Object.keys(presence).sort(function (a, b) {
+          return presence[b] - presence[a];
+        });
       }
       const trending = sorted.slice(0, 20);
       const trendingVideos = await videoModel.find({ _id: { $in: trending } });
@@ -327,13 +329,14 @@ class Home {
         let videos;
         videos = await videoModel
           .aggregate([{ $sample: { size: 20 } }])
-          .match({ video: { $ne: null }, country: country }).sort({ createdAt: -1 });
-
+          .match({ video: { $ne: null }, country: country })
+          .sort({ createdAt: -1 });
 
         if (_.size(videos) < 5) {
           videos = await videoModel
             .aggregate([{ $sample: { size: 20 } }])
-            .match({ video: { $ne: null } }).sort({ createdAt: -1 });
+            .match({ video: { $ne: null } })
+            .sort({ createdAt: -1 });
         }
         sendResponse(res, OK, "success", videos, []);
 
@@ -1208,6 +1211,82 @@ class Home {
     }
     res.send(200);
   };
+
+  profileAnalysis = async (req, res, next) => {
+    const {from,to} = req.query;
+    let range = {};
+    let balance;
+    let graphData = {};
+    console.log(typeof from);
+    
+    if (!_.isEmpty(from) && from !== 'undefined' ) {
+      console.log('hello');
+      range['from'] = from;
+    }
+    if (!_.isEmpty(to) && to !== 'undefined') {
+      range['to'] = to;
+    }
+    const videos = await videoModel.find({ uploader: req.user._id, video: {$ne: null} });
+    
+    if(!_.isEmpty(range)){
+       balance = await transactionHistory.find({
+        userId: req.user._id,
+        type: "CREDIT",
+        description: "credit for subscription",
+        createdAt: { $gte: range.from, $lte: moment(range.to).add(1,'days') }
+      });
+
+      graphData = await this.getGraphData(balance);
+    }else {
+      balance = await transactionHistory.find({
+        userId: req.user._id,
+        type: "CREDIT",
+        description: "credit for subscription",
+      });
+      graphData = await this.getGraphData(balance);
+    }
+    const subscriptions = await transactionHistory.find({
+      userId: req.user._id,
+      type: "CREDIT",
+      description: "credit for subscription",
+    });
+    const total = _.sumBy(balance,'amount');
+    const totalSubscriptions = _.size(subscriptions);
+    const views = _.sumBy(videos,'views');
+    const comments = _.sumBy(videos,'numberOfComments');
+    const likes = _.sumBy(videos,'likeCount');
+
+    const data = {subscriptions: totalSubscriptions,total,views,comments,likes,graphData};
+    sendResponse(
+      res,
+      OK,
+      "success",
+       data,
+      []
+    );
+  };
+
+  getGraphData = async(data)=>{
+    console.log(data);
+    const processedData = _.map(data,(item)=> {
+      return {
+        Month: moment(item.createdAt).format('MMM'),
+        amount: item.amount
+      }
+    })
+    const grouped = _.groupBy(processedData,(item)=> item.Month);
+    const dataSet = _.map(grouped,(item)=>{
+      const sum = _.sumBy(item,(item)=> item.amount);
+      return {
+        Month: item[0].Month,
+        amount: sum
+      }
+    })
+    
+    const labels = _.map(dataSet,(item)=> item.Month)
+    const amount = _.map(dataSet,(item)=> item.amount);
+    return {labels,amount}
+  }
 }
 
 module.exports = new Home();

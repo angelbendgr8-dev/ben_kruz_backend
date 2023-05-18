@@ -39,7 +39,7 @@ class NotificationsService {
   }
 
   async getPreference(user) {
-    console.log(user);
+    // console.log(user);
     let pref = await preferenceModel
       .findOne({ user: user._id })
       .select("-_id -__v");

@@ -1306,12 +1306,37 @@ class AppVideo {
   };
 
   getVideoAnalytics = async (req, res,next) => {
+    console.log(req.params.id)
       try{
-        const {videoId} = req.params.videoId;
-        const views = videoViews.find({ videoId: videoId})
-      }catch(error){
+        const {id} = req.params;
+        const views = await videoViews.find({ videoId: id})
+        console.log(views);
+        const graphData = await this.getGraphData(views);
+        const data = {graphData};
+    sendResponse(
+      res,
+      OK,
+      "success",
+       data,
+      []
+    );
 
+      }catch(error){
+        console.log(error)
       }
+  }
+  getGraphData = async(data)=>{
+    console.log(data);
+    const processedData = _.map(data,(item)=> {
+      return {
+        Month: moment(item.createdAt).format('MMM'),
+      }
+    })
+    const grouped = _.countBy(processedData,(item)=> item.Month);
+   
+    const labels = Object.keys(grouped);
+    const count = Object.values(grouped);
+    return {labels,count}
   }
 }
 

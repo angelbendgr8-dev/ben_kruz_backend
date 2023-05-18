@@ -27,8 +27,8 @@ homeRouter.get("/create/category", appTokenMiddleware, Home.createCategory);
 homeRouter.get("/get/categories", appTokenMiddleware, Home.getCategories);
 homeRouter.get(
   "/get/my/categories",
-  authMiddleware,
   appTokenMiddleware,
+  authMiddleware,
   Home.getMyCategories
 );
 homeRouter.post("/follow/user", appTokenMiddleware, Home.followUser);
@@ -59,34 +59,39 @@ homeRouter.post("/search/video", appTokenMiddleware, Home.searchContent);
 homeRouter.post("/search/profile", appTokenMiddleware, Home.searchProfile);
 homeRouter.post(
   "/add/history",
-  authMiddleware,
   appTokenMiddleware,
+  authMiddleware,
   Home.addHistory
 );
 homeRouter.get(
   "/get/history",
-  authMiddleware,
   appTokenMiddleware,
+  authMiddleware,
   Home.getHistory
 );
 homeRouter.post(
   "/delete/history",
-  authMiddleware,
   appTokenMiddleware,
+  authMiddleware,
   Home.deleteHistory
 );
 homeRouter.post(
   "/end/subscription",
-  authMiddleware,
   appTokenMiddleware,
+  authMiddleware,
   Home.endSubscription
 );
 homeRouter.post(
   "/check/subscriptions",
-  authMiddleware,
   appTokenMiddleware,
+  authMiddleware,
   Home.checkSubscriptions
 );
 homeRouter.get(`/user/:id`, appTokenMiddleware, Home.getUserById);
+homeRouter.get(
+  "/get/user/analytics",
+  appTokenMiddleware,
+  authMiddleware,
+  Home.profileAnalysis);
 
 module.exports = homeRouter;

@@ -12,7 +12,7 @@ const mg = mailgun.client({
 
 
 const  sendMail = async(templateName, subject, options) => {
-    const response = await mg.messages.create('mg.tialala.com', {
+    const response = await mg.messages.create('sandbox15fd384620f041a3b6d512409cb01ca7.mailgun.org', {
       from: 'tialalasandbox@gmail.com',
       to: options.email,
       subject: subject,

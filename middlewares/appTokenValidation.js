@@ -9,10 +9,10 @@ const { SECRET_KEY } = process.env;
 const appTokenMiddleware = async (req, res, next) => {
   try {
     const token = await bcrypt.hash(SECRET_KEY, 10);
-    console.log(token);
+    // console.log(token);
 
     const Authorization = req.header("appToken");
-    console.log(Authorization);
+    // console.log(Authorization);
     if (Authorization) {
       const secretKey = SECRET_KEY;
 

@@ -164,6 +164,7 @@ const transferForSubscribe = async (walletData, id) => {
 
   // const channel = await this.channel.findOne({ userId: walletData.receiversId });
   if (!receiverData.subscribers.includes(senderData._id)) {
+    console.log("Entered");
     const reference = "SUB" + `${Math.random().toString().substr(2, 8)}`;
     senderWallet.balance -= walletData.amount;
     receiverWallet.balance += walletData.amount;
