@@ -1036,21 +1036,55 @@ class Home {
   };
   getSubScribers = async (req, res, next) => {
     try {
-      const authToken = req.headers.authorization;
-      // console.log(authToken);
-      const token = authToken.split(" ")[1];
-      const verified = jwt.verify(token, process.env.JWT_TOKEN);
-      if (!verified["id"] || !authToken)
-        throw new HttpException(401, "Authorization failed");
+      const user = req.user;
+      const page = +req.query.page;
+      const limit = +req.query.limit;
 
-      const user = await userModel.findOne({ _id: verified["id"] });
-      // console.log(req.body);
-      user.fcmToken = req.body.fcmToken;
-      const updatedUser = await user.save();
-      if (user === updatedUser) {
-        sendResponse(res, OK, "subscribers Successfully", updatedUser, {});
-      }
+      let subscriptions = user.subscriptions.map(subscription=> subscription.id);
+      subscriptions =  userModel.find({_id: {$in: subscriptions}}).select('username profilePics');
+      const { data, totalContent, totalPages } = await functionPaginate(
+        page,
+        limit,
+        subscriptions,
+        user.subscriptions.length
+      );
+      // console.log(data);
+      sendResponse(
+        res,
+        OK,
+        "success",
+        { subscriptions: data, totalContent, totalPages },
+        []
+      );
     } catch (err) {
+      sendResponse(res, UNAUTHORIZED, "UNAUTHORIZED", "error", err);
+    }
+  };
+  getFollowers = async (req, res, next) => {
+    try {
+      const user = req.user;
+      const page = +req.query.page;
+      const limit = +req.query.limit;
+
+      let followers = user.follower.map(follower=> follower.id);
+      followers =  userModel.find({_id: {$in: followers}}).select('username profilePics');;
+      const { data, totalContent, totalPages } = await functionPaginate(
+        page,
+        limit,
+        followers,
+        user.follower.length
+      );
+      // console.log(data);
+      sendResponse(
+        res,
+        OK,
+        "success",
+        { followers: data, totalContent, totalPages },
+        []
+      );
+     
+    } catch (err) {
+      console.log(err);
       sendResponse(res, UNAUTHORIZED, "UNAUTHORIZED", "error", err);
     }
   };

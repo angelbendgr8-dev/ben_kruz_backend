@@ -119,6 +119,18 @@ videoRouter.get(
   AppVideo.getVideoAnalytics
 );
 videoRouter.get(
+  "/get/top/videos/",
+  appTokenMiddleware,
+  authMiddleware,
+  AppVideo.getTopVideos
+);
+videoRouter.get(
+  "/get/top/sparks/",
+  appTokenMiddleware,
+  authMiddleware,
+  AppVideo.getTopSparks,
+);
+videoRouter.get(
   "/get/comments/replies/:id",
   appTokenMiddleware,
   authMiddleware,

@@ -93,5 +93,15 @@ homeRouter.get(
   appTokenMiddleware,
   authMiddleware,
   Home.profileAnalysis);
+homeRouter.get(
+  "/get/followers",
+  appTokenMiddleware,
+  authMiddleware,
+  Home.getFollowers);
+homeRouter.get(
+  "/get/subscriptions",
+  appTokenMiddleware,
+  authMiddleware,
+  Home.getSubScribers);
 
 module.exports = homeRouter;

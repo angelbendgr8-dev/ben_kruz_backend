@@ -1214,7 +1214,7 @@ class AppVideo {
         }
       }
     } catch (error) {
-      console.log(error);
+      // console.log(error);
       sendResponse(res, OK, "error", {}, []);
     }
   };
@@ -1337,6 +1337,29 @@ class AppVideo {
     const labels = Object.keys(grouped);
     const count = Object.values(grouped);
     return {labels,count}
+  }
+
+  getTopVideos = async(req,res,next) =>{
+    const user = req.user;
+    try{
+      const videos = await videoModel.find({uploader:user._id, video:{$ne:null}}).sort({views:-1}).limit(10);
+      // console.log(videos)
+       sendResponse(res, OK, "success", videos, []);
+    }catch(error){
+      sendResponse(res, OK, "error", {}, []);
+    }
+   
+  }
+  getTopSparks = async(req,res,next) =>{
+    const user = req.user;
+    try{
+      const videos = await shorts.find({uploader:user._id, video:{$ne:null}}).sort({views:-1}).limit(10);
+      console.log(videos)
+       sendResponse(res, OK, "success", videos, []);
+    }catch(error){
+      console.log(error)
+      sendResponse(res, OK, "error", {}, []);
+    }
   }
 }
 
