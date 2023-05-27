@@ -1040,8 +1040,12 @@ class Home {
       const page = +req.query.page;
       const limit = +req.query.limit;
 
-      let subscriptions = user.subscriptions.map(subscription=> subscription.id);
-      subscriptions =  userModel.find({_id: {$in: subscriptions}}).select('username profilePics');
+      let subscriptions = user.subscriptions.map(
+        (subscription) => subscription.id
+      );
+      subscriptions = userModel
+        .find({ _id: { $in: subscriptions } })
+        .select("username profilePics");
       const { data, totalContent, totalPages } = await functionPaginate(
         page,
         limit,
@@ -1066,8 +1070,10 @@ class Home {
       const page = +req.query.page;
       const limit = +req.query.limit;
 
-      let followers = user.follower.map(follower=> follower.id);
-      followers =  userModel.find({_id: {$in: followers}}).select('username profilePics');;
+      let followers = user.follower.map((follower) => follower.id);
+      followers = userModel
+        .find({ _id: { $in: followers } })
+        .select("username profilePics");
       const { data, totalContent, totalPages } = await functionPaginate(
         page,
         limit,
@@ -1082,7 +1088,97 @@ class Home {
         { followers: data, totalContent, totalPages },
         []
       );
-     
+    } catch (err) {
+      console.log(err);
+      sendResponse(res, UNAUTHORIZED, "UNAUTHORIZED", "error", err);
+    }
+  };
+  getProfileFollowers = async (req, res, next) => {
+    try {
+      const userId = req.query.userId;
+      const page = +req.query.page;
+      const limit = +req.query.limit;
+      const user = await userModel.findOne({ _id: userId });
+      console.log(user);
+
+      let followers = user.follower.map((follower) => follower.id);
+      followers = userModel
+        .find({ _id: { $in: followers } })
+        .select("username profilePics");
+      const { data, totalContent, totalPages } = await functionPaginate(
+        page,
+        limit,
+        followers,
+        user.follower.length
+      );
+      // console.log(data);
+      sendResponse(
+        res,
+        OK,
+        "success",
+        { followers: data, totalContent, totalPages },
+        []
+      );
+    } catch (err) {
+      console.log(err);
+      sendResponse(res, UNAUTHORIZED, "UNAUTHORIZED", "error", err);
+    }
+  };
+  getFollowings = async (req, res, next) => {
+    try {
+      const user = req.user;
+      const page = +req.query.page;
+      const limit = +req.query.limit;
+
+      let followers = user.following.map((follower) => follower.id);
+      followers = userModel
+        .find({ _id: { $in: followers } })
+        .select("username profilePics");
+      const { data, totalContent, totalPages } = await functionPaginate(
+        page,
+        limit,
+        followers,
+        user.follower.length
+      );
+      // console.log(data);
+      sendResponse(
+        res,
+        OK,
+        "success",
+        { followers: data, totalContent, totalPages },
+        []
+      );
+    } catch (err) {
+      console.log(err);
+      sendResponse(res, UNAUTHORIZED, "UNAUTHORIZED", "error", err);
+    }
+  };
+  getProfileFollowings = async (req, res, next) => {
+    try {
+      const userId = req.query.userId;
+      console.log(userId);
+      const page = +req.query.page;
+      const limit = +req.query.limit;
+      const user = await userModel.findOne({ _id: userId });
+
+      let followers = user.following.map((follower) => follower.id);
+      followers = userModel
+        .find({ _id: { $in: followers } })
+        .select("username profilePics");
+      const { data, totalContent, totalPages } = await functionPaginate(
+        page,
+        limit,
+        followers,
+        user.follower.length
+      );
+      // console.log(data);
+      sendResponse(
+        res,
+        OK,
+        "success",
+        { followers: data, totalContent, totalPages },
+        []
+      );
     } catch (err) {
       console.log(err);
       sendResponse(res, UNAUTHORIZED, "UNAUTHORIZED", "error", err);
@@ -1247,80 +1343,114 @@ class Home {
   };
 
   profileAnalysis = async (req, res, next) => {
-    const {from,to} = req.query;
+    const { from, to } = req.query;
     let range = {};
     let balance;
     let graphData = {};
     console.log(typeof from);
-    
-    if (!_.isEmpty(from) && from !== 'undefined' ) {
-      console.log('hello');
-      range['from'] = from;
+
+    if (!_.isEmpty(from) && from !== "undefined") {
+      console.log("hello");
+      range["from"] = from;
     }
-    if (!_.isEmpty(to) && to !== 'undefined') {
-      range['to'] = to;
+    if (!_.isEmpty(to) && to !== "undefined") {
+      range["to"] = to;
     }
-    const videos = await videoModel.find({ uploader: req.user._id, video: {$ne: null} });
-    
-    if(!_.isEmpty(range)){
-       balance = await transactionHistory.find({
+    let videos;
+    let subscriptions;
+
+    if (!_.isEmpty(range)) {
+      balance = await transactionHistory.find({
         userId: req.user._id,
         type: "CREDIT",
         description: "credit for subscription",
-        createdAt: { $gte: range.from, $lte: moment(range.to).add(1,'days') }
+        createdAt: { $gte: range.from, $lte: moment(range.to).add(1, "days") },
+      });
+      videos = await videoModel.find({
+        uploader: req.user._id,
+        video: { $ne: null },
+        createdAt: { $gte: range.from, $lte: moment(range.to).add(1, "days") },
+      });
+      subscriptions = await transactionHistory.find({
+        userId: req.user._id,
+        type: "CREDIT",
+        description: "credit for subscription",
+        createdAt: { $gte: range.from, $lte: moment(range.to).add(1, "days") },
       });
 
       graphData = await this.getGraphData(balance);
-    }else {
+    } else {
       balance = await transactionHistory.find({
         userId: req.user._id,
         type: "CREDIT",
         description: "credit for subscription",
       });
+      subscriptions = await transactionHistory.find({
+        userId: req.user._id,
+        type: "CREDIT",
+        description: "credit for subscription",
+      });
       graphData = await this.getGraphData(balance);
+      videos = await videoModel.find({
+        uploader: req.user._id,
+        video: { $ne: null },
+      });
     }
-    const subscriptions = await transactionHistory.find({
-      userId: req.user._id,
-      type: "CREDIT",
-      description: "credit for subscription",
-    });
-    const total = _.sumBy(balance,'amount');
-    const totalSubscriptions = _.size(subscriptions);
-    const views = _.sumBy(videos,'views');
-    const comments = _.sumBy(videos,'numberOfComments');
-    const likes = _.sumBy(videos,'likeCount');
 
-    const data = {subscriptions: totalSubscriptions,total,views,comments,likes,graphData};
-    sendResponse(
-      res,
-      OK,
-      "success",
-       data,
-      []
-    );
+    const total = _.sumBy(balance, "amount");
+    const totalSubscriptions = _.size(subscriptions);
+    const views = _.sumBy(videos, "views");
+    const comments = _.sumBy(videos, "numberOfComments");
+    const likes = _.sumBy(videos, "likeCount");
+
+    const data = {
+      subscriptions: totalSubscriptions,
+      total,
+      views,
+      comments,
+      likes,
+      graphData,
+    };
+    sendResponse(res, OK, "success", data, []);
   };
 
-  getGraphData = async(data)=>{
+  getGraphData = async (data) => {
     console.log(data);
-    const processedData = _.map(data,(item)=> {
+    const processedData = _.map(data, (item) => {
       return {
-        Month: moment(item.createdAt).format('MMM'),
-        amount: item.amount
-      }
-    })
-    const grouped = _.groupBy(processedData,(item)=> item.Month);
-    const dataSet = _.map(grouped,(item)=>{
-      const sum = _.sumBy(item,(item)=> item.amount);
+        Month: moment(item.createdAt).format("MMM"),
+        amount: item.amount,
+      };
+    });
+    const grouped = _.groupBy(processedData, (item) => item.Month);
+    const dataSet = _.map(grouped, (item) => {
+      const sum = _.sumBy(item, (item) => item.amount);
       return {
         Month: item[0].Month,
-        amount: sum
-      }
-    })
-    
-    const labels = _.map(dataSet,(item)=> item.Month)
-    const amount = _.map(dataSet,(item)=> item.amount);
-    return {labels,amount}
-  }
+        amount: sum,
+      };
+    });
+
+    let labels = _.map(dataSet, (item) => item.Month).reverse();
+    const dataLength = labels.length;
+    const others = new Array(6 - dataLength);
+    console.log(others.length);
+    const otherLabels = [];
+    const otherAmount = [];
+    for (let i = 0; i <= 6 - dataLength; i++) {
+      otherLabels.push(
+        moment()
+          .subtract(dataLength + i, "month")
+          .format("MMM")
+      );
+      otherAmount.push(0);
+    }
+
+    let amount = _.map(dataSet, (item) => item.amount);
+    labels = [...otherLabels.reverse(),...labels];
+    amount = [...otherAmount.reverse(),...amount.reverse()];
+    return { labels, amount };
+  };
 }
 
 module.exports = new Home();

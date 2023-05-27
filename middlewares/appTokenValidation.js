@@ -9,10 +9,10 @@ const { SECRET_KEY } = process.env;
 const appTokenMiddleware = async (req, res, next) => {
   try {
     const token = await bcrypt.hash(SECRET_KEY, 10);
-    // console.log(token);
+    console.log(token);
 
     const Authorization = req.header("appToken");
-    // console.log(Authorization);
+    console.log(Authorization);
     if (Authorization) {
       const secretKey = SECRET_KEY;
 
@@ -27,7 +27,7 @@ const appTokenMiddleware = async (req, res, next) => {
       next(new HttpException(404, "Invalid authentication credentials", {}));
     }
   } catch (error) {
-    console.log(error);
+    console.log(error,'here');
     next(new HttpException(401, "Invalid authentication credentials", {}));
   }
 };

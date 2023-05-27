@@ -99,6 +99,21 @@ homeRouter.get(
   authMiddleware,
   Home.getFollowers);
 homeRouter.get(
+  "/get/profile/followers",
+  appTokenMiddleware,
+  authMiddleware,
+  Home.getProfileFollowers);
+homeRouter.get(
+  "/get/followings",
+  appTokenMiddleware,
+  authMiddleware,
+  Home.getFollowings);
+homeRouter.get(
+  "/get/profile/followings",
+  appTokenMiddleware,
+  authMiddleware,
+  Home.getProfileFollowings);
+homeRouter.get(
   "/get/subscriptions",
   appTokenMiddleware,
   authMiddleware,

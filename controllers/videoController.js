@@ -955,7 +955,7 @@ class AppVideo {
             userId: video.uploader,
             triggerId: user._id,
             title: `video Comment notification`,
-            content: `@${user.username}! commented on your video`,
+            content: `@${user.username}! commented on your video ${video.description}`,
             type: "regular",
             link: ``,
           });

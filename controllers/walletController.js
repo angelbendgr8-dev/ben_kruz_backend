@@ -9,6 +9,8 @@ const {
   getWallet,
   createBeneficiary,
 } = require("../services/wallet.service");
+const _ = require('lodash');
+const moment = require("moment");
 const transactionModel = require("../models/transaction.model");
 
 const { sendOtp, generateMobileOtp } = require("../services/sns.service");
@@ -30,7 +32,6 @@ class WalletController {
     } catch (error) {
       console.log(error);
       next(error);
-
     }
   };
 
@@ -91,13 +92,11 @@ class WalletController {
         throw new HttpException(409, "Invalid password provided", {});
       }
       const wallet = await createBeneficiary(user, data);
-      res
-        .status(201)
-        .json({
-          data: wallet,
-          message: "Created beneficiary",
-          status: "success",
-        });
+      res.status(201).json({
+        data: wallet,
+        message: "Created beneficiary",
+        status: "success",
+      });
     } catch (error) {
       console.log(error);
       next(error);
@@ -105,22 +104,46 @@ class WalletController {
   };
   fetchTransactions = async (req, res, next) => {
     const data = req.body;
-
-    const authToken = req.headers.authorization;
-    console.log(authToken);
-    const token = authToken.split(" ")[1];
-
+    const { from, to } = req.query;
+    let range = {};
+    console.log(req.query);
+    const user = req.user;
+    if (!_.isEmpty(from) && from !== "undefined") {
+      console.log("hello");
+      range["from"] = from;
+    }
+    if (!_.isEmpty(to) && to !== "undefined") {
+      range["to"] = to;
+    }
+    let transactions;
     try {
-      const verified = jwt.verify(token, process.env.JWT_TOKEN);
-      if (!verified["id"] || !authToken)
-        throw new HttpException(401, "Authorization failed");
-      const transactions = await transactionModel
-        .find({ userId: verified["id"] })
-        .sort({ createdAt: -1 })
-        .populate({ path: "recipient", model: "userModel",select:'username' })
-        .populate({ path: "sender", model: "userModel",select:'username' })
-        .exec();
-      console.log(transactions);
+      if (_.isEmpty(range)) {
+        console.log('here is a transaction')
+        transactions = await transactionModel
+          .find({ userId: user._id })
+          .sort({ createdAt: -1 })
+          .populate({
+            path: "recipient",
+            model: "userModel",
+            select: "username",
+          })
+          .populate({ path: "sender", model: "userModel", select: "username" })
+          .exec();
+      } else {
+        console.log("here is a transaction2");
+        transactions = await transactionModel
+          .find({ userId: user._id })
+          .sort({ createdAt: -1 })
+          .populate({
+            path: "recipient",
+            model: "userModel",
+            select: "username",
+          })
+          .populate({ path: "sender", model: "userModel", select: "username" })
+          .where({createdAt: { $gte: range.from, $lte: moment(range.to).add(1, "days") }})
+          .exec();
+      }
+      // console.log(transactions);
       res.status(201).json({
         data: transactions,
         message: "wallet transactions fetch successfully",

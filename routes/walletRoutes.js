@@ -25,11 +25,13 @@ walletRouter.post(
 walletRouter.get(
   "/transfer/subscribe",
   appTokenMiddleware,
+  authMiddleware,
   walletController.transferForSubscribe
 );
 walletRouter.get(
   "/fetch/transactions",
   appTokenMiddleware,
+  authMiddleware,
   walletController.fetchTransactions
 );
 walletRouter.post(
