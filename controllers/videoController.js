@@ -576,17 +576,17 @@ class AppVideo {
         user: video.uploader,
       });
       
-      if (uploaderPref.commentOnMyVideos === true) {
+      if (uploaderPref.commentOnMyVideos === true && reqBody.type !== "short") {
         await notifications.createNotification({
           userId: video.uploader,
           triggerId: user._id,
           title: `video Comment notification`,
-          content: `@${user.username}! commented on your video`,
+          content: `@${user.username}! commented on your video ${video.description}`,
           type: "regular",
           link: ``,
         });
       }
-      if(uploaderPref.commentOnShorts === true){
+      if(uploaderPref.commentOnShorts === true && reqBody.type === "short"){
         await notifications.createNotification({
           userId: video.uploader,
           triggerId: user._id,
