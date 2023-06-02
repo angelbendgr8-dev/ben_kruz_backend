@@ -1,5 +1,5 @@
 const cloudinary = require("cloudinary").v2;
-const { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_CLOUD_NAME } =
+const { CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_CLOUD_NAME,NOTIFICATION_URL } =
   process.env;
 
 const cloud = cloudinary.config({
@@ -18,7 +18,7 @@ const uploadVideo = async (file, public_id) => {
       eager_async: true,
       use_filename: true,
       unique_filename: false,
-      notification_url: "https://kruz-back.onrender.com/api/videos/upload"
+      notification_url: NOTIFICATION_URL,
     });
     console.log(video);
     return { video };
