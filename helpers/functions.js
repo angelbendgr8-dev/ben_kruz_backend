@@ -7,8 +7,8 @@ const serviceAccount = FCMserviceAccount;
 admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
 
 const credentials = {
-    apiKey: process.env.AFRICAS_TALKING_API_KEY,         
-    username: 'sandbox',     
+    apiKey: process.env.AFRICAS_TALKING_API_KEY,
+    username: 'sandbox',
   };
 
 const Africastalking = require('africastalking');
@@ -24,7 +24,7 @@ async function saveToDatabase(model) {
     } catch (e) {
         console.log(e);
         return Error(e)
-    } 
+    }
 }
 
 function sendResponse(res, code, status, data,errors) {
@@ -53,10 +53,10 @@ const sendMail = async (templateName,subject,options) =>{
       })
       .then(msg => console.log(msg)) // logs response data
       .catch(err => console.log(err)); // logs any error
-    
+
 }
 const sendSms = async (mobileNumber,secret) => {
-   
+
         const options = {
           to: `+${mobileNumber}`,
           message: `your otp-token for Kruz request is ${secret}`,
@@ -68,9 +68,9 @@ const  sendPushMessage = (token, data) => {
     admin.messaging().send({
         token: token,
         data: {
-            customData: "Deneme",
-            id: "1",
-            ad: "Yasin",
+            customData: "",
+            id: "",
+            ad: "",
             subTitle: "Kruz",
             type: data.type ? data.type : '',
         },
@@ -98,9 +98,9 @@ const  sendMultiPushMessage = (tokens, data) => {
     admin.messaging().sendMulticast({
         tokens: tokens,
         data: {
-            customData: "Deneme",
-            id: "1",
-            ad: "Yasin",
+            customData: "",
+            id: "",
+            ad: "",
             subTitle: "Kruz",
             type: data.type ? data.type : '',
         },

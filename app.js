@@ -17,6 +17,7 @@ var systemRouter = require('./routes/systemRoutes');
 const errorHandler = require('./helpers/errorHandler');
 const walletRouter = require('./routes/walletRoutes');
 const notificationRouter = require('./routes/notifications');
+const indexRouter = require('./routes');
 
 var app = express();
 
@@ -27,6 +28,8 @@ app.use(cors({origin:'*'}))
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use('/',indexRouter );
 
 app.use('/api', authRouter);
 app.use('/api/home', homeRouter);
